@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channel — VidLocal</title>
+  <link rel="stylesheet" href="/css/reset.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="header-logo">
+      <svg viewBox="0 0 90 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="20" rx="4" fill="#FF0000"/>
+        <polygon points="11,5 11,15 21,10" fill="white"/>
+      </svg>
+      <span>VidLocal</span>
+    </a>
+    <form class="header-search" action="/search" method="get">
+      <input type="text" name="q" placeholder="Search" aria-label="Search" />
+      <button type="submit" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="6"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+        </svg>
+      </button>
+    </form>
+    <div class="header-actions">
+      <a href="/upload" class="btn-upload">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Upload</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-body">
+    <div class="channel-layout">
+      <div class="channel-banner" id="channelBanner">
+        <div class="channel-banner-inner">
+          <div class="channel-avatar-large" id="channelAvatarLarge"></div>
+          <div class="channel-banner-info">
+            <h1 id="channelNameHeading">Loading…</h1>
+            <p id="channelMeta"></p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="channel-tabs">
+        <a href="#videos" class="active" data-tab="videos">Videos</a>
+        <a href="#about" data-tab="about">About</a>
+      </nav>
+
+      <section id="videosTab">
+        <div class="video-grid wide" id="channelVideoGrid"></div>
+        <div class="pagination" id="channelPagination"></div>
+      </section>
+
+      <section id="aboutTab" style="display:none;padding:24px;">
+        <h2 style="font-size:18px;margin-bottom:12px;">About</h2>
+        <p id="channelBio" style="font-size:15px;color:#aaa;"></p>
+      </section>
+    </div>
+  </div>
+
+  <script type="module" src="/js/api.js"></script>
+  <script type="module" src="/js/channel.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidLocal</title>
+  <link rel="stylesheet" href="/css/reset.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="header-logo">
+      <svg viewBox="0 0 90 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="20" rx="4" fill="#FF0000"/>
+        <polygon points="11,5 11,15 21,10" fill="white"/>
+      </svg>
+      <span>VidLocal</span>
+    </a>
+    <form class="header-search" action="/search" method="get">
+      <input type="text" name="q" placeholder="Search" aria-label="Search" />
+      <button type="submit" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </form>
+    <div class="header-actions">
+      <a href="/upload" class="btn-upload">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Upload</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-body">
+    <main>
+      <div class="filter-chips" id="filterChips" style="display:flex;gap:8px;padding:12px 24px;overflow-x:auto;border-bottom:1px solid #272727;">
+        <button class="chip active" data-sort="newest">All</button>
+        <button class="chip" data-sort="views">Most Viewed</button>
+        <button class="chip" data-sort="oldest">Oldest</button>
+      </div>
+
+      <section class="video-grid" id="videoGrid" aria-label="Video feed">
+        <!-- Skeleton placeholders -->
+        <div class="video-card skeleton-card" aria-hidden="true">
+          <div class="card-thumbnail skeleton"></div>
+          <div class="card-info">
+            <div class="card-avatar skeleton" style="width:36px;height:36px;border-radius:50%;"></div>
+            <div style="flex:1">
+              <div class="skeleton" style="height:14px;margin-bottom:6px;border-radius:4px;"></div>
+              <div class="skeleton" style="height:12px;width:60%;border-radius:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="pagination" id="pagination"></div>
+    </main>
+  </div>
+
+  <style>
+    .filter-chips { scrollbar-width: none; }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      padding: 6px 14px;
+      border-radius: 16px;
+      background: #272727;
+      color: #fff;
+      font-size: 14px;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .chip:hover { background: #3f3f3f; }
+    .chip.active { background: #fff; color: #000; }
+  </style>
+
+  <script type="module" src="/js/api.js"></script>
+  <script type="module" src="/js/home.js"></script>
+</body>
+</html>

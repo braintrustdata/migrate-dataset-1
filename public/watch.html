@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidLocal</title>
+  <link rel="stylesheet" href="/css/reset.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="header-logo">
+      <svg viewBox="0 0 90 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="20" rx="4" fill="#FF0000"/>
+        <polygon points="11,5 11,15 21,10" fill="white"/>
+      </svg>
+      <span>VidLocal</span>
+    </a>
+    <form class="header-search" action="/search" method="get">
+      <input type="text" name="q" placeholder="Search" aria-label="Search" />
+      <button type="submit" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="6"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+        </svg>
+      </button>
+    </form>
+    <div class="header-actions">
+      <a href="/upload" class="btn-upload">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Upload</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-body">
+    <main class="watch-layout">
+      <!-- Left: player + info + comments -->
+      <section class="player-section">
+        <div class="video-player-wrap">
+          <video id="mainPlayer" controls preload="metadata" playsinline>
+            Your browser does not support video playback.
+          </video>
+        </div>
+
+        <div class="video-info">
+          <h1 class="video-title" id="videoTitle">Loading…</h1>
+
+          <div class="video-meta-row">
+            <span class="view-count" id="viewCount"></span>
+            <span class="upload-date" id="uploadDate"></span>
+            <button class="like-btn" id="likeBtn" aria-label="Like">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+              </svg>
+              <span id="likeCount">0</span>
+            </button>
+          </div>
+
+          <div class="channel-row">
+            <a id="channelLink" href="#" class="channel-name-link">
+              <div class="channel-avatar" id="channelAvatar"></div>
+            </a>
+            <div>
+              <a id="channelNameLink" class="channel-name-link" href="#"></a>
+              <div class="channel-video-count" id="channelVideoCount"></div>
+            </div>
+          </div>
+
+          <div class="video-description" id="videoDescription"></div>
+          <div class="video-tags" id="videoTags"></div>
+        </div>
+
+        <!-- Comments -->
+        <section class="comments-section">
+          <h2 class="comments-header">
+            <span id="commentCount">0</span> Comments
+          </h2>
+
+          <form class="comment-form" id="commentForm" novalidate>
+            <input
+              type="text"
+              name="authorName"
+              id="commentAuthor"
+              placeholder="Your name"
+              autocomplete="nickname"
+              maxlength="60"
+              required
+            />
+            <textarea
+              name="body"
+              id="commentBody"
+              placeholder="Add a comment…"
+              rows="2"
+              maxlength="2000"
+              required
+            ></textarea>
+            <div class="comment-actions">
+              <button type="button" class="btn-secondary" id="cancelComment">Cancel</button>
+              <button type="submit" class="btn-primary">Comment</button>
+            </div>
+          </form>
+
+          <div id="commentsList" aria-live="polite"></div>
+
+          <button class="load-more-btn" id="loadMoreComments" style="display:none">
+            Load more comments
+          </button>
+        </section>
+      </section>
+
+      <!-- Right: related videos -->
+      <aside class="watch-sidebar">
+        <h2 class="related-title">Up next</h2>
+        <div id="relatedVideos"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="/js/api.js"></script>
+  <script type="module" src="/js/watch.js"></script>
+</body>
+</html>
