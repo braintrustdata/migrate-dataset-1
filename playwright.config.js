@@ -1,25 +1,21 @@
-// @ts-check
-import { defineConfig } from '@playwright/test';
+const { defineConfig } = require('@playwright/test');
 
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './tests/e2e',
-  timeout: 15_000,
+  timeout: 30000,
+  expect: { timeout: 5000 },
+  fullyParallel: false,
   retries: 0,
+  workers: 1,
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3002',
     headless: true,
-    viewport: { width: 1280, height: 720 },
+    actionTimeout: 5000,
   },
   webServer: {
     command: 'node server.js',
-    url: 'http://localhost:3001',
-    reuseExistingServer: false,
-    timeout: 15_000,
-    env: {
-      PORT: '3001',
-      DATA_DIR: './test-data',
-    },
+    port: 3002,
+    reuseExistingServer: !process.env.CI,
+    timeout: 10000,
   },
-  workers: 1, // Sequential to avoid data race between tests
-  reporter: [['list'], ['html', { open: 'never' }]],
 });

@@ -1,88 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VidLocal</title>
-  <link rel="stylesheet" href="/css/reset.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/responsive.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gmail Clone</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <header class="header">
-    <a href="/" class="header-logo">
-      <svg viewBox="0 0 90 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="28" height="20" rx="4" fill="#FF0000"/>
-        <polygon points="11,5 11,15 21,10" fill="white"/>
-      </svg>
-      <span>VidLocal</span>
-    </a>
-    <form class="header-search" action="/search" method="get">
-      <input type="text" name="q" placeholder="Search" aria-label="Search" />
-      <button type="submit" aria-label="Search">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </form>
-    <div class="header-actions">
-      <a href="/upload" class="btn-upload">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>Upload</span>
-      </a>
+    <div class="header-left">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">&#9776;</button>
+      <div class="logo">Gmail</div>
+    </div>
+    <div class="header-center">
+      <div class="search-bar">
+        <input type="text" data-testid="search-input" id="search-input" placeholder="Search mail" autocomplete="off">
+        <button data-testid="search-btn" id="search-btn" aria-label="Search">&#128269;</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="user-email">me@gmail-clone.local</span>
     </div>
   </header>
 
-  <div class="page-body">
-    <main>
-      <div class="filter-chips" id="filterChips" style="display:flex;gap:8px;padding:12px 24px;overflow-x:auto;border-bottom:1px solid #272727;">
-        <button class="chip active" data-sort="newest">All</button>
-        <button class="chip" data-sort="views">Most Viewed</button>
-        <button class="chip" data-sort="oldest">Oldest</button>
-      </div>
+  <div class="app-container">
+    <aside class="sidebar" id="sidebar">
+      <button class="compose-btn" data-testid="compose-btn" id="compose-btn">
+        <span class="compose-icon">&#9998;</span> Compose
+      </button>
 
-      <section class="video-grid" id="videoGrid" aria-label="Video feed">
-        <!-- Skeleton placeholders -->
-        <div class="video-card skeleton-card" aria-hidden="true">
-          <div class="card-thumbnail skeleton"></div>
-          <div class="card-info">
-            <div class="card-avatar skeleton" style="width:36px;height:36px;border-radius:50%;"></div>
-            <div style="flex:1">
-              <div class="skeleton" style="height:14px;margin-bottom:6px;border-radius:4px;"></div>
-              <div class="skeleton" style="height:12px;width:60%;border-radius:4px;"></div>
+      <nav class="folder-nav" id="folder-nav">
+        <a href="#inbox" class="folder-item active" data-testid="folder-inbox" data-folder="inbox">
+          <span class="folder-icon">&#128229;</span>
+          <span class="folder-name">Inbox</span>
+          <span class="folder-count" data-testid="folder-count-inbox" id="count-inbox"></span>
+        </a>
+        <a href="#starred" class="folder-item" data-testid="folder-starred" data-folder="starred">
+          <span class="folder-icon">&#9733;</span>
+          <span class="folder-name">Starred</span>
+          <span class="folder-count" data-testid="folder-count-starred" id="count-starred"></span>
+        </a>
+        <a href="#sent" class="folder-item" data-testid="folder-sent" data-folder="sent">
+          <span class="folder-icon">&#9993;</span>
+          <span class="folder-name">Sent</span>
+          <span class="folder-count" data-testid="folder-count-sent" id="count-sent"></span>
+        </a>
+        <a href="#drafts" class="folder-item" data-testid="folder-drafts" data-folder="drafts">
+          <span class="folder-icon">&#128196;</span>
+          <span class="folder-name">Drafts</span>
+          <span class="folder-count" data-testid="folder-count-drafts" id="count-drafts"></span>
+        </a>
+        <a href="#all" class="folder-item" data-testid="folder-all" data-folder="all">
+          <span class="folder-icon">&#128233;</span>
+          <span class="folder-name">All Mail</span>
+          <span class="folder-count" data-testid="folder-count-all" id="count-all"></span>
+        </a>
+        <a href="#spam" class="folder-item" data-testid="folder-spam" data-folder="spam">
+          <span class="folder-icon">&#9888;</span>
+          <span class="folder-name">Spam</span>
+          <span class="folder-count" data-testid="folder-count-spam" id="count-spam"></span>
+        </a>
+        <a href="#trash" class="folder-item" data-testid="folder-trash" data-folder="trash">
+          <span class="folder-icon">&#128465;</span>
+          <span class="folder-name">Trash</span>
+          <span class="folder-count" data-testid="folder-count-trash" id="count-trash"></span>
+        </a>
+        <a href="#archive" class="folder-item" data-testid="folder-archive" data-folder="archive">
+          <span class="folder-icon">&#128451;</span>
+          <span class="folder-name">Archive</span>
+          <span class="folder-count" data-testid="folder-count-archive" id="count-archive"></span>
+        </a>
+      </nav>
+
+      <div class="labels-section" id="labels-section">
+        <div class="labels-header">
+          <span>Labels</span>
+          <button class="create-label-btn" data-testid="create-label-btn" id="create-label-btn" title="Create new label">+</button>
+        </div>
+        <div class="labels-list" id="labels-list"></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+      <!-- Toolbar -->
+      <div class="toolbar" id="toolbar">
+        <div class="toolbar-left">
+          <input type="checkbox" data-testid="select-all" id="select-all" class="select-all-checkbox" title="Select all">
+          <div class="toolbar-actions" id="toolbar-actions">
+            <button data-testid="toolbar-archive" id="toolbar-archive" class="toolbar-btn" title="Archive" disabled>&#128451;</button>
+            <button data-testid="toolbar-delete" id="toolbar-delete" class="toolbar-btn" title="Delete" disabled>&#128465;</button>
+            <button data-testid="toolbar-read" id="toolbar-read" class="toolbar-btn" title="Mark as read" disabled>&#9993;</button>
+            <button data-testid="toolbar-unread" id="toolbar-unread" class="toolbar-btn" title="Mark as unread" disabled>&#9993;!</button>
+            <button data-testid="toolbar-spam" id="toolbar-spam" class="toolbar-btn" title="Report spam" disabled>&#9888;</button>
+            <div class="toolbar-label-wrapper">
+              <button data-testid="toolbar-label" id="toolbar-label" class="toolbar-btn" title="Label" disabled>&#127991;</button>
+              <div class="label-menu" data-testid="label-menu" id="label-menu"></div>
             </div>
           </div>
         </div>
-      </section>
+        <div class="toolbar-right">
+          <button data-testid="empty-trash-btn" id="empty-trash-btn" class="empty-trash-btn" style="display:none;">Empty Trash Now</button>
+          <div class="pagination-controls">
+            <span data-testid="pagination-info" id="pagination-info"></span>
+            <button data-testid="pagination-prev" id="pagination-prev" class="pagination-btn" disabled>&lt;</button>
+            <button data-testid="pagination-next" id="pagination-next" class="pagination-btn" disabled>&gt;</button>
+          </div>
+        </div>
+      </div>
 
-      <div class="pagination" id="pagination"></div>
+      <!-- Email List View -->
+      <div class="email-list" data-testid="email-list" id="email-list"></div>
+
+      <!-- Email Detail View -->
+      <div class="email-detail" data-testid="email-detail" id="email-detail" style="display:none;"></div>
     </main>
   </div>
 
-  <style>
-    .filter-chips { scrollbar-width: none; }
-    .filter-chips::-webkit-scrollbar { display: none; }
-    .chip {
-      padding: 6px 14px;
-      border-radius: 16px;
-      background: #272727;
-      color: #fff;
-      font-size: 14px;
-      white-space: nowrap;
-      border: none;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .chip:hover { background: #3f3f3f; }
-    .chip.active { background: #fff; color: #000; }
-  </style>
+  <!-- Compose Modal -->
+  <div class="compose-modal" data-testid="compose-modal" id="compose-modal" style="display:none;">
+    <div class="compose-header">
+      <span class="compose-title" id="compose-title">New Message</span>
+      <div class="compose-header-actions">
+        <button class="compose-minimize" id="compose-minimize" title="Minimize">&minus;</button>
+        <button class="compose-close" data-testid="compose-discard" id="compose-discard" title="Discard">&times;</button>
+      </div>
+    </div>
+    <div class="compose-body-wrapper" id="compose-body-wrapper">
+      <div class="compose-field compose-to-field">
+        <label>To</label>
+        <div class="compose-input-wrapper">
+          <div class="compose-chips" id="compose-to-chips"></div>
+          <input type="text" data-testid="compose-to" id="compose-to" autocomplete="off">
+          <div class="contact-suggestions" data-testid="contact-suggestions" id="contact-suggestions" style="display:none;"></div>
+        </div>
+        <a href="#" class="cc-bcc-toggle" data-testid="cc-bcc-toggle" id="cc-bcc-toggle">Cc/Bcc</a>
+      </div>
+      <div class="compose-field compose-cc-field" id="compose-cc-field" style="display:none;">
+        <label>Cc</label>
+        <div class="compose-input-wrapper">
+          <div class="compose-chips" id="compose-cc-chips"></div>
+          <input type="text" data-testid="compose-cc" id="compose-cc" autocomplete="off">
+        </div>
+      </div>
+      <div class="compose-field compose-bcc-field" id="compose-bcc-field" style="display:none;">
+        <label>Bcc</label>
+        <div class="compose-input-wrapper">
+          <div class="compose-chips" id="compose-bcc-chips"></div>
+          <input type="text" data-testid="compose-bcc" id="compose-bcc" autocomplete="off">
+        </div>
+      </div>
+      <div class="compose-field">
+        <input type="text" data-testid="compose-subject" id="compose-subject" placeholder="Subject">
+      </div>
+      <textarea data-testid="compose-body" id="compose-body" placeholder=""></textarea>
+      <div class="compose-attachments" id="compose-attachments"></div>
+      <div class="compose-footer">
+        <button class="compose-send-btn" data-testid="compose-send" id="compose-send">Send</button>
+        <button class="compose-draft-btn" data-testid="compose-save-draft" id="compose-save-draft">Save Draft</button>
+        <label class="compose-attach-label" title="Attach files">
+          &#128206;
+          <input type="file" data-testid="compose-attach" id="compose-attach" multiple style="display:none;">
+        </label>
+        <div class="compose-footer-spacer"></div>
+        <button class="compose-trash-btn" id="compose-trash" title="Discard draft">&#128465;</button>
+      </div>
+    </div>
+  </div>
 
-  <script type="module" src="/js/api.js"></script>
-  <script type="module" src="/js/home.js"></script>
+  <!-- Label Creation Dialog -->
+  <div class="dialog-overlay" id="label-dialog-overlay" style="display:none;">
+    <div class="label-dialog" data-testid="label-dialog" id="label-dialog">
+      <h3>New Label</h3>
+      <div class="dialog-field">
+        <label>Name:</label>
+        <input type="text" data-testid="label-name-input" id="label-name-input" placeholder="Label name">
+      </div>
+      <div class="dialog-field">
+        <label>Color:</label>
+        <input type="color" data-testid="label-color-input" id="label-color-input" value="#4285f4">
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-cancel" id="label-cancel-btn">Cancel</button>
+        <button class="dialog-save" data-testid="label-save-btn" id="label-save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="notification" data-testid="notification" id="notification" style="display:none;"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>

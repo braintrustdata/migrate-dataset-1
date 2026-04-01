@@ -1,131 +1,129 @@
-// Shared API utilities — imported by all page scripts
+/**
+ * API client module for Gmail Clone
+ */
+const API = (() => {
+  const BASE = '/api';
 
-export async function apiFetch(path, options = {}) {
-  const res = await fetch(path, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
+  async function request(method, path, body, isFormData) {
+    const opts = {
+      method,
+      headers: {},
+    };
+    if (body && !isFormData) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    } else if (body && isFormData) {
+      opts.body = body;
+    }
+    const res = await fetch(`${BASE}${path}`, opts);
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); msg = j.error || msg; } catch(e) {}
+      throw new Error(msg);
+    }
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      return res.json();
+    }
+    return res;
+  }
+
+  return {
+    // Emails
+    getEmails(params = {}) {
+      const qs = new URLSearchParams();
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') qs.set(k, v);
+      });
+      return request('GET', `/emails?${qs}`);
     },
-    ...options,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { const d = await res.json(); msg = d.error || msg; } catch {}
-    throw new Error(msg);
-  }
-  return res.json();
-}
 
-export function formatViews(n) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return String(n);
-}
+    getEmail(id) {
+      return request('GET', `/emails/${encodeURIComponent(id)}`);
+    },
 
-export function formatRelativeTime(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const secs = Math.floor(diff / 1000);
-  if (secs < 60) return 'just now';
-  const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins} minute${mins !== 1 ? 's' : ''} ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`;
-  const years = Math.floor(months / 12);
-  return `${years} year${years !== 1 ? 's' : ''} ago`;
-}
+    createEmail(data) {
+      return request('POST', '/emails', data);
+    },
 
-export function avatarColor(str) {
-  // Simple deterministic color from string (mirrors server-side logic)
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    hash |= 0;
-  }
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 55%, 45%)`;
-}
+    updateEmail(id, data) {
+      return request('PUT', `/emails/${encodeURIComponent(id)}`, data);
+    },
 
-export function thumbnailUrl(video) {
-  return `/thumbnails/${video.videoId}`;
-}
+    deleteEmail(id, permanent = false) {
+      const qs = permanent ? '?permanent=true' : '';
+      return request('DELETE', `/emails/${encodeURIComponent(id)}${qs}`);
+    },
 
-export function renderThumbnail(video, classExtra = '') {
-  return `<img
-    src="${thumbnailUrl(video)}"
-    alt="${escapeHtml(video.title)}"
-    class="${classExtra}"
-    loading="lazy"
-    onerror="this.style.display='none'"
-  />`;
-}
+    bulkAction(ids, action, labelId) {
+      const body = { ids, action };
+      if (labelId) body.labelId = labelId;
+      return request('POST', '/emails/bulk', body);
+    },
 
-export function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+    replyToEmail(id, data) {
+      return request('POST', `/emails/${encodeURIComponent(id)}/reply`, data);
+    },
 
-export function renderVideoCard(video) {
-  const color = avatarColor(video.uploaderName || '?');
-  const initial = (video.uploaderName || '?').charAt(0).toUpperCase();
-  const views = formatViews(video.views || 0);
-  const time = formatRelativeTime(video.createdAt);
-  const channelUrl = `/channel?u=${encodeURIComponent(video.uploaderName)}`;
-  const watchUrl = `/watch?v=${video.videoId}`;
+    forwardEmail(id, data) {
+      return request('POST', `/emails/${encodeURIComponent(id)}/forward`, data);
+    },
 
-  // Use <div> wrapper to avoid invalid nested <a> tags (which cause browser re-parsing)
-  return `
-    <div class="video-card" data-video-id="${video.videoId}" data-href="${watchUrl}" role="link" tabindex="0">
-      <a href="${watchUrl}" class="card-thumbnail-link" tabindex="-1">
-        <div class="card-thumbnail">
-          <img
-            src="/thumbnails/${video.videoId}"
-            alt="${escapeHtml(video.title)}"
-            loading="lazy"
-            onerror="this.style.display='none'"
-          />
-        </div>
-      </a>
-      <div class="card-info">
-        <a href="${channelUrl}"
-           class="card-avatar"
-           style="background:${color}"
-           title="${escapeHtml(video.uploaderName)}"
-        >${escapeHtml(initial)}</a>
-        <div class="card-meta">
-          <div class="card-title">${escapeHtml(video.title)}</div>
-          <div class="card-channel">
-            <a href="${channelUrl}">${escapeHtml(video.uploaderName)}</a>
-          </div>
-          <div class="card-stats">${views} views · ${time}</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
+    // Search
+    search(q) {
+      return request('GET', `/search?q=${encodeURIComponent(q)}`);
+    },
 
-// Add click handler for video cards (needed since outer element is <div> not <a>)
-document.addEventListener('click', (e) => {
-  const card = e.target.closest('.video-card[data-href]');
-  if (!card) return;
-  // Don't navigate if clicking a link inside the card
-  if (e.target.closest('a')) return;
-  window.location.href = card.dataset.href;
-});
+    // Folders
+    getFolderCounts() {
+      return request('GET', '/folders/counts');
+    },
 
-export function renderPagination(page, totalPages, onPage) {
-  if (totalPages <= 1) return '';
-  const prev = page > 1 ? `<button data-page="${page - 1}">← Prev</button>` : `<button disabled>← Prev</button>`;
-  const next = page < totalPages ? `<button data-page="${page + 1}">Next →</button>` : `<button disabled>Next →</button>`;
-  return `${prev}<span class="page-info">Page ${page} of ${totalPages}</span>${next}`;
-}
+    // Labels
+    getLabels() {
+      return request('GET', '/labels');
+    },
 
-// Expose globally for non-module script contexts (legacy compatibility)
-window.__api = { apiFetch, formatViews, formatRelativeTime, avatarColor, escapeHtml, renderVideoCard };
+    createLabel(data) {
+      return request('POST', '/labels', data);
+    },
+
+    updateLabel(id, data) {
+      return request('PUT', `/labels/${encodeURIComponent(id)}`, data);
+    },
+
+    deleteLabel(id) {
+      return request('DELETE', `/labels/${encodeURIComponent(id)}`);
+    },
+
+    // Contacts
+    getContacts(q = '') {
+      const qs = q ? `?q=${encodeURIComponent(q)}` : '';
+      return request('GET', `/contacts${qs}`);
+    },
+
+    createContact(data) {
+      return request('POST', '/contacts', data);
+    },
+
+    deleteContact(id) {
+      return request('DELETE', `/contacts/${encodeURIComponent(id)}`);
+    },
+
+    // Attachments
+    uploadAttachment(file) {
+      const fd = new FormData();
+      fd.append('file', file);
+      return request('POST', '/attachments', fd, true);
+    },
+
+    getAttachmentUrl(id) {
+      return `${BASE}/attachments/${encodeURIComponent(id)}`;
+    },
+
+    // Reset
+    reset() {
+      return request('POST', '/reset');
+    },
+  };
+})();
