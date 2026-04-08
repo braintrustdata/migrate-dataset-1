@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Processor - Batch Submit</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app" class="container">
+    <h1>Batch Submit</h1>
+
+    <div class="card section">
+      <div class="form-group">
+        <label for="batch-input">Jobs (JSON array)</label>
+        <textarea id="batch-input" rows="20"></textarea>
+        <div id="input-error" class="form-error"></div>
+      </div>
+
+      <button id="submit-btn" class="btn btn-primary">Submit Batch</button>
+    </div>
+
+    <div id="results" class="section"></div>
+  </div>
+  <script type="module" src="/js/batch.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Processor - Submit Job</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app" class="container">
+    <h1>Submit Job</h1>
+
+    <div class="card section">
+      <div class="form-group">
+        <label>Job Type</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" name="jobType" id="type-transform" value="transform" checked>
+            <label for="type-transform">
+              Transform
+              <small>Aggregate records by category</small>
+            </label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="jobType" id="type-report" value="report">
+            <label for="type-report">
+              Report
+              <small>Generate data report</small>
+            </label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="jobType" id="type-review" value="review">
+            <label for="type-review">
+              Review
+              <small>Process with approval step</small>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <p id="type-description" style="color: var(--color-text-secondary); font-size: 0.875rem; margin-bottom: 1rem;"></p>
+
+      <div class="form-group">
+        <label for="job-input">Input (JSON)</label>
+        <textarea id="job-input" rows="15"></textarea>
+        <div id="input-error" class="form-error"></div>
+      </div>
+
+      <button id="submit-btn" class="btn btn-primary">Submit Job</button>
+    </div>
+  </div>
+  <script type="module" src="/js/submit.js"></script>
+</body>
+</html>
