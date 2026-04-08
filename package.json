@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node server.js",
+    "start": "npx wrangler dev",
     "test": "npx playwright test",
     "test:headed": "npx playwright test --headed"
   },
   "devDependencies": {
-    "@playwright/test": "^1.42.0"
+    "@playwright/test": "^1.42.0",
+    "wrangler": "^4.81.0"
   }
 }

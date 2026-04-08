@@ -13,7 +13,7 @@ module.exports = defineConfig({
     actionTimeout: 5000,
   },
   webServer: {
-    command: 'node server.js',
+    command: 'npx wrangler dev --port 3002',
     port: 3002,
     reuseExistingServer: !process.env.CI,
     timeout: 10000,
