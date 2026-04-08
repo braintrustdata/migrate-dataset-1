@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "wrangler dev",
     "test": "npx playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "ws": "^8.20.0"
+    "wrangler": "^3.99.0"
   }
 }

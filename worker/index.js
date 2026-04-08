@@ -1,88 +1,85 @@
-import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
-import { join, extname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { WebSocketServer } from 'ws';
-import { Store } from './lib/store.js';
-import { generateAIResponse } from './lib/ai.js';
+import { Store } from '../lib/store.js';
+import { generateAIResponse } from '../lib/ai.js';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const PORT = parseInt(process.env.PORT || '3003', 10);
-const DATA_DIR = process.env.DATA_DIR || './data';
-const PUBLIC_DIR = join(__dirname, 'public');
+const store = new Store();
 
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const { pathname } = url;
+    const method = request.method;
+
+    // WebSocket upgrade
+    if (pathname === '/ws') {
+      const upgrade = request.headers.get('Upgrade');
+      if (!upgrade || upgrade.toLowerCase() !== 'websocket') {
+        return new Response('Expected Upgrade: websocket', { status: 426 });
+      }
+
+      const pair = new WebSocketPair();
+      const [client, server] = Object.values(pair);
+      server.accept();
+      handleWSConnection(server);
+      return new Response(null, { status: 101, webSocket: client });
+    }
+
+    // API routes
+    if (pathname.startsWith('/api/')) {
+      try {
+        let body = null;
+        if (method !== 'GET' && method !== 'DELETE') {
+          try {
+            body = await request.json();
+          } catch {
+            body = null;
+          }
+        }
+        const result = await handleAPI(pathname, method, body);
+        return new Response(JSON.stringify(result.data), {
+          status: result.status,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Static assets
+    return env.ASSETS.fetch(request);
+  },
 };
 
-const store = new Store(DATA_DIR);
-await store.init();
-
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  const { pathname } = url;
-  const method = req.method;
-
-  if (pathname.startsWith('/api/')) {
-    try {
-      const body = await readBody(req);
-      const result = await handleAPI(pathname, method, body);
-      sendJSON(res, result.status, result.data);
-    } catch (err) {
-      sendJSON(res, 500, { error: err.message });
-    }
-    return;
-  }
-
-  serveStatic(res, pathname);
-});
-
 // ---------------------------------------------------------------------------
-// WebSocket (uses 'ws' for the handshake, streaming logic is ours)
+// WebSocket
 // ---------------------------------------------------------------------------
 
-const wss = new WebSocketServer({ noServer: true });
-
-server.on('upgrade', (req, socket, head) => {
-  const { pathname } = new URL(req.url, 'http://localhost');
-  if (pathname !== '/ws') {
-    socket.destroy();
-    return;
-  }
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    onWSConnection(ws);
-  });
-});
-
-function onWSConnection(ws) {
-  ws.on('message', async (raw) => {
+function handleWSConnection(server) {
+  server.addEventListener('message', async (event) => {
     try {
-      const msg = JSON.parse(raw);
+      const msg = JSON.parse(event.data);
       if (msg.type === 'message') {
-        await handleStreamMessage(ws, msg);
+        await handleStreamMessage(server, msg);
       }
     } catch (err) {
-      ws.send(JSON.stringify({ type: 'error', error: err.message }));
+      server.send(JSON.stringify({ type: 'error', error: err.message }));
     }
   });
 }
 
-async function handleStreamMessage(ws, { conversationId, content }) {
+async function handleStreamMessage(server, { conversationId, content }) {
   if (!content?.trim()) {
-    ws.send(JSON.stringify({ type: 'error', error: 'Content is required' }));
+    server.send(
+      JSON.stringify({ type: 'error', error: 'Content is required' }),
+    );
     return;
   }
 
   const conv = await store.getConversation(conversationId);
   if (!conv) {
-    ws.send(
+    server.send(
       JSON.stringify({ type: 'error', error: 'Conversation not found' }),
     );
     return;
@@ -90,7 +87,7 @@ async function handleStreamMessage(ws, { conversationId, content }) {
 
   // Save user message and confirm
   const userMsg = await store.addMessage(conversationId, 'user', content);
-  ws.send(JSON.stringify({ type: 'user_message', message: userMsg }));
+  server.send(JSON.stringify({ type: 'user_message', message: userMsg }));
 
   // Generate full AI response, then stream it token-by-token
   const messages = await store.listMessages(conversationId);
@@ -98,8 +95,8 @@ async function handleStreamMessage(ws, { conversationId, content }) {
   const chunks = aiContent.match(/\S+|\s+/g) || [aiContent];
 
   for (const chunk of chunks) {
-    if (ws.readyState !== 1) return; // 1 = OPEN
-    ws.send(JSON.stringify({ type: 'token', content: chunk }));
+    if (server.readyState !== 1) return;
+    server.send(JSON.stringify({ type: 'token', content: chunk }));
     await new Promise((r) => setTimeout(r, 20));
   }
 
@@ -118,66 +115,7 @@ async function handleStreamMessage(ws, { conversationId, content }) {
     await store.updateConversation(conversationId, { title: autoTitle });
   }
 
-  ws.send(JSON.stringify({ type: 'message_end', message: assistantMsg }));
-}
-
-// ---------------------------------------------------------------------------
-
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// ---------------------------------------------------------------------------
-// Static file serving
-// ---------------------------------------------------------------------------
-
-async function serveStatic(res, pathname) {
-  let filePath = join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
-
-  try {
-    const info = await stat(filePath);
-    if (info.isDirectory()) filePath = join(filePath, 'index.html');
-    const data = await readFile(filePath);
-    const ext = extname(filePath);
-    res.writeHead(200, {
-      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-    });
-    res.end(data);
-  } catch {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
-  }
-}
-
-// ---------------------------------------------------------------------------
-// JSON helpers
-// ---------------------------------------------------------------------------
-
-function sendJSON(res, status, data) {
-  const body = JSON.stringify(data);
-  res.writeHead(status, { 'Content-Type': 'application/json' });
-  res.end(body);
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    if (req.method === 'GET' || req.method === 'DELETE') {
-      resolve(null);
-      return;
-    }
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        resolve(data ? JSON.parse(data) : null);
-      } catch {
-        resolve(null);
-      }
-    });
-    req.on('error', reject);
-  });
+  server.send(JSON.stringify({ type: 'message_end', message: assistantMsg }));
 }
 
 // ---------------------------------------------------------------------------
